@@ -1,0 +1,15 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5432
+  host: db
+  username: postgres
+  password:
+
+development:
+  <<: *default
+  database: store_space_development
+
+test:
+  <<: *default
+  database: store_space_test
