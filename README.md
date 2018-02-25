@@ -38,6 +38,11 @@ docker-compose run -e "RAILS_ENV=test" app rspec
 docker-compose up
 ```
 
+### Linting
+```
+rubocop
+```
+
 ### Sample APIs to run
 To create Store
 ```
