@@ -1,6 +1,6 @@
 class SpacesController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_space, only: [:show, :update, :get_price_quote]
+  before_action :find_space, only: [:show, :update, :get_price_quote, :destroy]
 
   def create
     @space = Space.new(space_params)
@@ -29,7 +29,6 @@ class SpacesController < ApplicationController
   end
 
   def destroy
-    @space = Space.where(id: params[:id]).first
     if @space.destroy
       render json: { message: "Space deleted successfully" }
     else

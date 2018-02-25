@@ -1,6 +1,6 @@
 class StoresController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_store, only: [:show, :update]
+  before_action :find_store, only: [:show, :update, :destroy]
 
   def create
     @store = Store.new(store_params)
@@ -57,7 +57,6 @@ class StoresController < ApplicationController
   end
 
   def destroy
-    @store = Store.where(id: params[:id]).first
     if @store.destroy
       render json: { message: "Store deleted successfully" }
     else
