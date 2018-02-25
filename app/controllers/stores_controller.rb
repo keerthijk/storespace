@@ -3,7 +3,7 @@ class StoresController < ApplicationController
   before_action :find_store, only: [:show, :update]
 
   def create
-    @store = Store.new(@json['store'])
+    @store = Store.new(store_params)
     if @store.save
       render json: { message: "Store created successfully", store: @store }
     else
@@ -18,16 +18,7 @@ class StoresController < ApplicationController
         attribute = processed_params.keys.first
         params_values = processed_params.values.first.split(':')
         value = params_values[1]
-        operation = case params_values[0]
-        when 'like'
-          'ILIKE'
-        when "eq"
-          '='
-        when 'gt'
-          '>'
-        when 'lt'
-          '<'
-        end
+        operation = get_operation(params_values[0])
         value = "'%#{value}%'" if ['title', 'street', 'city'].include?(attribute)
         query_string = "SELECT * FROM stores where #{attribute} #{operation} #{value}"
       else
@@ -40,12 +31,25 @@ class StoresController < ApplicationController
     end
   end
 
+  def get_operation(operation_string)
+    operation = case operation_string
+    when 'like'
+      'ILIKE'
+    when "eq"
+      '='
+    when 'gt'
+      '>'
+    when 'lt'
+      '<'
+    end
+  end
+
   def show
     render json: {store: @store}
   end
 
   def update
-    if @store.update(@json['store'])
+    if @store.update(store_params)
       render json: { message: "Store updated successfully", store: @store }
     else
       render json: { message: @store.errors.full_messages }
@@ -63,7 +67,10 @@ class StoresController < ApplicationController
 
   private
     def find_store
-      @store = Store.where(id: params[:id]).first
-      render json: {message: "Item not found"} unless @store
+      @store = Store.find_by_display_store_id(params[:id])
+    end
+
+    def store_params
+      params.require(:store).permit(:title, :city, :street)
     end
 end

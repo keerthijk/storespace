@@ -10,30 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180221173817) do
+ActiveRecord::Schema.define(version: 20180225014923) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
 
-  create_table "spaces", force: :cascade do |t|
+  create_table "spaces", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
     t.string   "title"
     t.integer  "size"
     t.decimal  "price_per_day"
     t.decimal  "price_per_week"
     t.decimal  "price_per_month"
-    t.integer  "store_id"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
-    t.index ["store_id"], name: "index_spaces_on_store_id", using: :btree
+    t.uuid     "store_id"
+    t.integer  "display_id",      default: -> { "nextval('display_id_seq'::regclass)" }
+    t.datetime "created_at",                                                             null: false
+    t.datetime "updated_at",                                                             null: false
   end
 
-  create_table "stores", force: :cascade do |t|
+  create_table "stores", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
     t.string   "title"
     t.string   "city"
     t.text     "street"
     t.integer  "spaces_count"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.integer  "display_store_id", default: -> { "nextval('display_store_id_seq'::regclass)" }
+    t.datetime "created_at",                                                                    null: false
+    t.datetime "updated_at",                                                                    null: false
   end
 
 end

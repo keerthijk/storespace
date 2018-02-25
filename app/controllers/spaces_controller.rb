@@ -3,7 +3,7 @@ class SpacesController < ApplicationController
   before_action :find_space, only: [:show, :update, :get_price_quote]
 
   def create
-    @space = Space.new(@json['space'])
+    @space = Space.new(space_params)
     if @space.save
       render json: { message: "Space created successfully", space: @space }
     else
@@ -21,7 +21,7 @@ class SpacesController < ApplicationController
   end
 
   def update
-    if @space.update(@json['space'])
+    if @space.update(space_params)
       render json: { message: "Space updated successfully", space: @space }
     else
       render json: { message: @space.errors.full_messages }
@@ -38,29 +38,30 @@ class SpacesController < ApplicationController
   end
 
   def get_price_quote
-    number_of_months = remaining_days = remaining_weeks = 0
     start_date = params[:start_date].to_date
     end_date = params[:end_date].to_date
     number_of_days = (end_date - start_date).to_i
-    if number_of_days >= 30
-      number_of_months = number_of_days / 30
-      remaining_days = number_of_days % 30
-      if remaining_days > 0
-        remaining_weeks = remaining_days / 7
-        remaining_days = remaining_days % 7
-      end
-      price_quote = (@space.price_per_month * number_of_months) + (@space.price_per_week * remaining_weeks) + (@space.price_per_day * remaining_days)
-    else number_of_days < 30
-      remaining_weeks = number_of_days / 7
-      remaining_days = number_of_days % 7
-      price_quote = (@space.price_per_week * remaining_weeks) + (@space.price_per_day * remaining_days)
-    end
+    price_quote = calculate_price(number_of_days, 30, 7)
     render json: {message: "Price is: #{price_quote}"}
+  end
+
+  def calculate_price(number_of_days, days_in_month, days_in_week)
+    number_of_months = remaining_days = remaining_weeks = 0
+    number_of_months = number_of_days / days_in_month
+    remaining_days = number_of_days % days_in_month
+    if remaining_days > 0
+      remaining_weeks = remaining_days / days_in_week
+      remaining_days = remaining_days % days_in_week
+    end
+    price_quote = (@space.price_per_month * number_of_months) + (@space.price_per_week * remaining_weeks) + (@space.price_per_day * remaining_days)
   end
 
   private
     def find_space
-      @space = Space.where(id: params[:id]).first
-      render json: {message: "Item not found"} unless @space
+      @space = Space.find_by_display_id(params[:id])
+    end
+
+    def space_params
+      params.require(:space).permit(:title, :size, :price_per_day, :price_per_week, :price_per_month, :store_id)
     end
 end
